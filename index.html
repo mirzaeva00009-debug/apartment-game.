@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>3D Apartment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene renderer="antialias: true; colorManagement: true;">
+      
+      <a-sky color="#050505"></a-sky>
+
+      <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+      <a-entity light="type: point; intensity: 0.8; distance: 10" position="0 3 0"></a-entity>
+
+      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#222"></a-plane>
+      <a-box position="0 2.5 -5" width="10" height="5" depth="0.1" color="#333"></a-box>
+      <a-box position="-5 2.5 0" width="0.1" height="5" depth="10" color="#333"></a-box>
+      <a-box position="5 2.5 0" width="0.1" height="5" depth="10" color="#333"></a-box>
+
+      <a-entity position="0 0 -3">
+        <a-box position="0 0.8 0" width="2" height="0.1" depth="1" color="#4a3222"></a-box>
+        <a-box position="-0.9 0.4 -0.4" width="0.1" height="0.8" depth="0.1" color="#222"></a-box>
+        <a-box position="0.9 0.4 -0.4" width="0.1" height="0.8" depth="0.1" color="#222"></a-box>
+        <a-box position="-0.9 0.4 0.4" width="0.1" height="0.8" depth="0.1" color="#222"></a-box>
+        <a-box position="0.9 0.4 0.4" width="0.1" height="0.8" depth="0.1" color="#222"></a-box>
+      </a-entity>
+
+      <a-entity movement-controls="speed: 0.15">
+        <a-entity camera position="0 1.6 2" look-controls></a-entity>
+      </a-entity>
+
+    </a-scene>
+  </body>
+</html>
