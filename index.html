@@ -1,81 +1,79 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>3D Fix Pro</title>
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.1/dist/nipplejs.min.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; touch-action: none; }
-      #joystick-zone {
-        position: absolute;
-        bottom: 60px; /* Поднял выше, чтобы не уходил за экран */
-        left: 60px;
-        width: 150px;
-        height: 150px;
-        z-index: 999;
-      }
+        body { margin: 0; overflow: hidden; background: #000; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #fff; z-index: 10; font-family: monospace; background: rgba(255,0,0,0.5); padding: 5px; }
     </style>
-  </head>
-  <body>
-    
-    <a-scene renderer="antialias: true; colorManagement: true;" shadow="type: pcfsoft">
-      <a-sky color="#050505"></a-sky>
-      <a-entity light="type: ambient; intensity: 0.6; color: #fff"></a-entity>
-      <a-entity light="type: point; intensity: 1; distance: 10" position="0 3 -2"></a-entity>
-
-      <a-plane position="0 0 0" rotation="-90 0 0" width="20" height="20" color="#111"></a-plane>
-      <a-box position="0 2.5 -5" width="10" height="5" depth="0.2" color="#2c3e50"></a-box>
-      <a-box position="-5 2.5 0" width="0.2" height="5" depth="10" color="#2c3e50"></a-box>
-      <a-box position="5 2.5 0" width="0.2" height="5" depth="10" color="#2c3e50"></a-box>
-
-      <a-entity position="0 0 -3">
-        <a-box position="0 0.8 0" width="2.2" height="0.1" depth="1.2" color="#4e342e"></a-box>
-        <a-box position="-1 0.4 -0.5" width="0.1" height="0.8" depth="0.1" color="#1a1a1a"></a-box>
-        <a-box position="1 0.4 -0.5" width="0.1" height="0.8" depth="0.1" color="#1a1a1a"></a-box>
-      </a-entity>
-
-      <a-entity id="rig" movement-controls="controls: touch; speed: 0.15">
-        <a-entity camera 
-                  position="0 1.6 2" 
-                  look-controls="pointerLockEnabled: false; touchEnabled: true; reverseTouchDrag: false">
-        </a-entity>
-      </a-entity>
-    </a-scene>
-
-    <div id="joystick-zone"></div>
-
+</head>
+<body>
+    <div id="ui">GRAPHICS STRESS TEST V5.0<br>SHADOWS: ON | HIGH-RES</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // Скрипт жестко связывает джойстик и камеру
-      window.onload = function() {
-        var manager = nipplejs.create({
-          zone: document.getElementById('joystick-zone'),
-          mode: 'static',
-          position: {left: '50%', top: '50%'},
-          color: 'white',
-          size: 100
-        });
-
-        const rig = document.getElementById('rig');
-        manager.on('move', function (evt, data) {
-          if (data.vector) {
-            // Движение вперед/назад и влево/вправо
-            let forward = data.vector.y;
-            let side = data.vector.x;
-            rig.components['movement-controls'].velocity.x = side * 0.2;
-            rig.components['movement-controls'].velocity.z = -forward * 0.2;
-          }
-        });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         
-        manager.on('end', function () {
-          rig.components['movement-controls'].velocity.set(0, 0, 0);
-        });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // ВКЛЮЧАЕМ ТЕНИ
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // МЯГКИЕ ТЕНИ
+        document.body.appendChild(renderer.domElement);
 
-        // Блокируем стандартные жесты браузера
-        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-      };
+        // СВЕТ С ТЕНЯМИ
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(2, 4, 2);
+        light.castShadow = true; 
+        light.shadow.mapSize.width = 2048;
+        light.shadow.mapSize.height = 2048;
+        scene.add(light);
+
+        const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambient);
+
+        // ПОЛ (Принимает тени)
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(20, 20),
+            new THREE.MeshStandardMaterial({ color: 0x444444 })
+        );
+        floor.rotation.x = -Math.PI/2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // СТЕНЫ
+        const wall = new THREE.Mesh(
+            new THREE.BoxGeometry(10, 5, 0.5),
+            new THREE.MeshStandardMaterial({ color: 0x666666 })
+        );
+        wall.position.z = -5;
+        wall.receiveShadow = true;
+        scene.add(wall);
+
+        // СТОЛ (Отбрасывает тени)
+        const table = new THREE.Group();
+        const top = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.2), new THREE.MeshStandardMaterial({color: 0x4a2e19}));
+        top.position.y = 0.8; top.castShadow = true; top.receiveShadow = true;
+        table.add(top);
+
+        const legGeo = new THREE.BoxGeometry(0.1, 0.8, 0.1);
+        [[-1.1,0.4,-0.5],[1.1,0.4,-0.5],[-1.1,0.4,0.5],[1.1,0.4,0.5]].forEach(p => {
+            const l = new THREE.Mesh(legGeo, new THREE.MeshStandardMaterial({color: 0x222222}));
+            l.position.set(...p); l.castShadow = true;
+            table.add(l);
+        });
+        table.position.set(0, 0, -2);
+        scene.add(table);
+
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, -2);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            table.rotation.y += 0.005; // Вращаем стол для проверки теней
+            renderer.render(scene, camera);
+        }
+        animate();
     </script>
-  </body>
+</body>
 </html>
